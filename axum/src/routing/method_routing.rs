@@ -438,13 +438,22 @@ where
 
 top_level_handler_fn!(connect, CONNECT);
 top_level_handler_fn!(delete, DELETE);
-top_level_handler_fn!(get, GET);
+// top_level_handler_fn!(get, GET);
 top_level_handler_fn!(head, HEAD);
 top_level_handler_fn!(options, OPTIONS);
 top_level_handler_fn!(patch, PATCH);
 top_level_handler_fn!(post, POST);
 top_level_handler_fn!(put, PUT);
 top_level_handler_fn!(trace, TRACE);
+
+pub fn get<H, T, S>(handler: H) -> MethodRouter<S, Infallible>
+where
+    H: Handler<T, S>,
+    T: 'static,
+    S: Clone + Send + Sync + 'static,
+{
+    on(MethodFilter::GET, handler)
+}
 
 /// Route requests with the given method to the handler.
 ///
@@ -1155,7 +1164,7 @@ where
 
         call!(req, HEAD, head);
         call!(req, HEAD, get);
-        call!(req, GET, get);
+        // call!(req, GET, get);
         call!(req, POST, post);
         call!(req, OPTIONS, options);
         call!(req, PATCH, patch);
@@ -1163,6 +1172,19 @@ where
         call!(req, DELETE, delete);
         call!(req, TRACE, trace);
         call!(req, CONNECT, connect);
+
+        if *req.method() == Method::GET {
+            match get {
+                MethodEndpoint::None => {}
+                MethodEndpoint::Route(route) => {
+                    return route.clone().oneshot_inner_owned(req);
+                }
+                MethodEndpoint::BoxedHandler(handler) => {
+                    let route = handler.clone().into_route(state);
+                    return route.oneshot_inner_owned(req);
+                }
+            }
+        }
 
         let future = fallback.clone().call_with_state(req, state);
 

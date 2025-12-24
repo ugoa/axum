@@ -175,9 +175,20 @@ where
     #[doc = include_str!("../docs/routing/route.md")]
     #[track_caller]
     pub fn route(self, path: &str, method_router: MethodRouter<S>) -> Self {
-        tap_inner!(self, mut this => {
-            panic_on_err!(this.path_router.route(path, method_router));
-        })
+        // tap_inner!(self, mut this => {
+        //     panic_on_err!(this.path_router.route(path, method_router));
+        // })
+
+        let mut this = self.into_inner();
+        match (this.path_router.route(path, method_router)) {
+            Ok(x) => x,
+            Err(err) => {
+                panic!("{err}")
+            }
+        };
+        Router {
+            inner: Arc::new(this),
+        }
     }
 
     #[doc = include_str!("../docs/routing/route_service.md")]
@@ -251,30 +262,63 @@ where
             catch_all_fallback,
         } = other.into_inner();
 
-        map_inner!(self, mut this => {
-            match (this.default_fallback, default_fallback) {
-                // other has a default fallback
-                // use the one from other
-                (_, true) => {}
-                // this has default fallback, other has a custom fallback
-                (true, false) => {
-                    this.default_fallback = false;
-                }
-                // both have a custom fallback, not allowed
-                (false, false) => {
-                    panic!("Cannot merge two `Router`s that both have a fallback")
-                }
-            };
-
-            panic_on_err!(this.path_router.merge(path_router));
-
-            this.catch_all_fallback = this
-                .catch_all_fallback
-                .merge(catch_all_fallback)
-                .unwrap_or_else(|| panic!("Cannot merge two `Router`s that both have a fallback"));
-
-            this
-        })
+        // map_inner!(self, mut this => {
+        //     match (this.default_fallback, default_fallback) {
+        //         // other has a default fallback
+        //         // use the one from other
+        //         (_, true) => {}
+        //         // this has default fallback, other has a custom fallback
+        //         (true, false) => {
+        //             this.default_fallback = false;
+        //         }
+        //         // both have a custom fallback, not allowed
+        //         (false, false) => {
+        //             panic!("Cannot merge two `Router`s that both have a fallback")
+        //         }
+        //     };
+        //
+        //
+        // match this.path_router.merge(path_router) {
+        //     Ok(x) => x,
+        //     Err(err) => panic!("{err}"),
+        // }
+        //
+        //     this.catch_all_fallback = this
+        //         .catch_all_fallback
+        //         .merge(catch_all_fallback)
+        //         .unwrap_or_else(|| panic!("Cannot merge two `Router`s that both have a fallback"));
+        //
+        //     this
+        // })
+        {
+            let mut this = self.into_inner();
+            Router {
+                inner: Arc::new({
+                    match (this.default_fallback, default_fallback) {
+                        (_, true) => {}
+                        (true, false) => {
+                            this.default_fallback = false;
+                        }
+                        (false, false) => {
+                            panic!("Cannot merge two `Router`s that both have a fallback");
+                        }
+                    };
+                    match this.path_router.merge(path_router) {
+                        Ok(x) => x,
+                        Err(err) => {
+                            panic!("{err}")
+                        }
+                    }
+                    this.catch_all_fallback = this
+                        .catch_all_fallback
+                        .merge(catch_all_fallback)
+                        .unwrap_or_else(|| {
+                            panic!("Cannot merge two `Router`s that both have a fallback")
+                        });
+                    this
+                }),
+            }
+        }
     }
 
     #[doc = include_str!("../docs/routing/layer.md")]
@@ -303,11 +347,22 @@ where
         <L::Service as Service<Request>>::Error: Into<Infallible> + 'static,
         <L::Service as Service<Request>>::Future: Send + 'static,
     {
-        map_inner!(self, this => RouterInner {
-            path_router: this.path_router.route_layer(layer),
-            default_fallback: this.default_fallback,
-            catch_all_fallback: this.catch_all_fallback,
-        })
+        // map_inner!(self, this => RouterInner {
+        //     path_router: this.path_router.route_layer(layer),
+        //     default_fallback: this.default_fallback,
+        //     catch_all_fallback: this.catch_all_fallback,
+        // })
+
+        let this = self.into_inner();
+        Router {
+            inner: Arc::new(
+                (RouterInner {
+                    path_router: this.path_router.route_layer(layer),
+                    default_fallback: this.default_fallback,
+                    catch_all_fallback: this.catch_all_fallback,
+                }),
+            ),
+        }
     }
 
     /// True if the router currently has at least one route added.
@@ -323,11 +378,18 @@ where
         H: Handler<T, S>,
         T: 'static,
     {
-        tap_inner!(self, mut this => {
-            this.catch_all_fallback =
-                Fallback::BoxedHandler(BoxedIntoRoute::from_handler(handler.clone()));
-        })
-        .fallback_endpoint(Endpoint::MethodRouter(any(handler)))
+        // tap_inner!(self, mut this => {
+        //     this.catch_all_fallback =
+        //         Fallback::BoxedHandler(BoxedIntoRoute::from_handler(handler.clone()));
+        // })
+        // .fallback_endpoint(Endpoint::MethodRouter(any(handler)))
+
+        let mut this = self.into_inner();
+        this.catch_all_fallback =
+            Fallback::BoxedHandler(BoxedIntoRoute::from_handler(handler.clone()));
+        Router {
+            inner: Arc::new(this),
+        }
     }
 
     /// Add a fallback [`Service`] to the router.
