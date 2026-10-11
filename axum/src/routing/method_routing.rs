@@ -1154,8 +1154,35 @@ where
         } = self;
 
         call!(req, HEAD, head);
-        call!(req, HEAD, get);
-        call!(req, GET, get);
+        // call!(req, HEAD, get);
+
+        if *req.method() == Method::HEAD {
+            match get {
+                MethodEndpoint::None => {}
+                MethodEndpoint::Route(route) => {
+                    return route.clone().oneshot_inner_owned(req);
+                }
+                MethodEndpoint::BoxedHandler(handler) => {
+                    let route = handler.clone().into_route(state);
+                    return route.oneshot_inner_owned(req);
+                }
+            }
+        }
+        // call!(req, GET, get);
+
+        if *req.method() == Method::GET {
+            match get {
+                MethodEndpoint::None => {}
+                MethodEndpoint::Route(route) => {
+                    return route.clone().oneshot_inner_owned(req);
+                }
+                MethodEndpoint::BoxedHandler(handler) => {
+                    let route = handler.clone().into_route(state);
+                    return route.oneshot_inner_owned(req);
+                }
+            }
+        }
+
         call!(req, POST, post);
         call!(req, OPTIONS, options);
         call!(req, PATCH, patch);
@@ -1257,6 +1284,10 @@ where
         match self {
             Self::None => MethodEndpoint::None,
             Self::Route(route) => MethodEndpoint::Route(route),
+            // State 在这个地方被消解成了（）,
+            // Router<S> 变成了Router<()>,
+            // 而 Service trait 只 impl 了 Router<()>
+            // .serve() 只接受一个合法的 Service
             Self::BoxedHandler(handler) => MethodEndpoint::Route(handler.into_route(state.clone())),
         }
     }

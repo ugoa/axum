@@ -259,7 +259,1090 @@ macro_rules! impl_handler {
     };
 }
 
-all_the_tuples!(impl_handler);
+// all_the_tuples!(impl_handler);
+
+// ================================================
+// Recursive expansion of the all_the_tuples! macro
+// ================================================
+
+#[diagnostic::do_not_recommend]
+#[allow(non_snake_case, unused_mut)]
+impl<F, Fut, S, Res, M, T1> Handler<(M, T1), S> for F
+where
+    F: FnOnce(T1) -> Fut + Clone + Send + Sync + 'static,
+    Fut: Future<Output = Res> + Send,
+    S: Send + Sync + 'static,
+    Res: IntoResponse,
+    T1: FromRequest<S, M> + Send,
+{
+    type Future = Pin<Box<dyn Future<Output = Response> + Send>>;
+    fn call(self, req: Request, state: S) -> Self::Future {
+        let (mut parts, body) = req.into_parts();
+        Box::pin(async move {
+            let req = Request::from_parts(parts, body);
+            let T1 = match T1::from_request(req, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            self(T1).await.into_response()
+        })
+    }
+}
+#[diagnostic::do_not_recommend]
+#[allow(non_snake_case, unused_mut)]
+impl<F, Fut, S, Res, M, T1, T2> Handler<(M, T1, T2), S> for F
+where
+    F: FnOnce(T1, T2) -> Fut + Clone + Send + Sync + 'static,
+    Fut: Future<Output = Res> + Send,
+    S: Send + Sync + 'static,
+    Res: IntoResponse,
+    T1: FromRequestParts<S> + Send,
+    T2: FromRequest<S, M> + Send,
+{
+    type Future = Pin<Box<dyn Future<Output = Response> + Send>>;
+    fn call(self, req: Request, state: S) -> Self::Future {
+        let (mut parts, body) = req.into_parts();
+        Box::pin(async move {
+            let T1 = match T1::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let req = Request::from_parts(parts, body);
+            let T2 = match T2::from_request(req, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            self(T1, T2).await.into_response()
+        })
+    }
+}
+#[diagnostic::do_not_recommend]
+#[allow(non_snake_case, unused_mut)]
+impl<F, Fut, S, Res, M, T1, T2, T3> Handler<(M, T1, T2, T3), S> for F
+where
+    F: FnOnce(T1, T2, T3) -> Fut + Clone + Send + Sync + 'static,
+    Fut: Future<Output = Res> + Send,
+    S: Send + Sync + 'static,
+    Res: IntoResponse,
+    T1: FromRequestParts<S> + Send,
+    T2: FromRequestParts<S> + Send,
+    T3: FromRequest<S, M> + Send,
+{
+    type Future = Pin<Box<dyn Future<Output = Response> + Send>>;
+    fn call(self, req: Request, state: S) -> Self::Future {
+        let (mut parts, body) = req.into_parts();
+        Box::pin(async move {
+            let T1 = match T1::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T2 = match T2::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let req = Request::from_parts(parts, body);
+            let T3 = match T3::from_request(req, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            self(T1, T2, T3).await.into_response()
+        })
+    }
+}
+#[diagnostic::do_not_recommend]
+#[allow(non_snake_case, unused_mut)]
+impl<F, Fut, S, Res, M, T1, T2, T3, T4> Handler<(M, T1, T2, T3, T4), S> for F
+where
+    F: FnOnce(T1, T2, T3, T4) -> Fut + Clone + Send + Sync + 'static,
+    Fut: Future<Output = Res> + Send,
+    S: Send + Sync + 'static,
+    Res: IntoResponse,
+    T1: FromRequestParts<S> + Send,
+    T2: FromRequestParts<S> + Send,
+    T3: FromRequestParts<S> + Send,
+    T4: FromRequest<S, M> + Send,
+{
+    type Future = Pin<Box<dyn Future<Output = Response> + Send>>;
+    fn call(self, req: Request, state: S) -> Self::Future {
+        let (mut parts, body) = req.into_parts();
+        Box::pin(async move {
+            let T1 = match T1::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T2 = match T2::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T3 = match T3::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let req = Request::from_parts(parts, body);
+            let T4 = match T4::from_request(req, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            self(T1, T2, T3, T4).await.into_response()
+        })
+    }
+}
+#[diagnostic::do_not_recommend]
+#[allow(non_snake_case, unused_mut)]
+impl<F, Fut, S, Res, M, T1, T2, T3, T4, T5> Handler<(M, T1, T2, T3, T4, T5), S> for F
+where
+    F: FnOnce(T1, T2, T3, T4, T5) -> Fut + Clone + Send + Sync + 'static,
+    Fut: Future<Output = Res> + Send,
+    S: Send + Sync + 'static,
+    Res: IntoResponse,
+    T1: FromRequestParts<S> + Send,
+    T2: FromRequestParts<S> + Send,
+    T3: FromRequestParts<S> + Send,
+    T4: FromRequestParts<S> + Send,
+    T5: FromRequest<S, M> + Send,
+{
+    type Future = Pin<Box<dyn Future<Output = Response> + Send>>;
+    fn call(self, req: Request, state: S) -> Self::Future {
+        let (mut parts, body) = req.into_parts();
+        Box::pin(async move {
+            let T1 = match T1::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T2 = match T2::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T3 = match T3::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T4 = match T4::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let req = Request::from_parts(parts, body);
+            let T5 = match T5::from_request(req, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            self(T1, T2, T3, T4, T5).await.into_response()
+        })
+    }
+}
+#[diagnostic::do_not_recommend]
+#[allow(non_snake_case, unused_mut)]
+impl<F, Fut, S, Res, M, T1, T2, T3, T4, T5, T6> Handler<(M, T1, T2, T3, T4, T5, T6), S> for F
+where
+    F: FnOnce(T1, T2, T3, T4, T5, T6) -> Fut + Clone + Send + Sync + 'static,
+    Fut: Future<Output = Res> + Send,
+    S: Send + Sync + 'static,
+    Res: IntoResponse,
+    T1: FromRequestParts<S> + Send,
+    T2: FromRequestParts<S> + Send,
+    T3: FromRequestParts<S> + Send,
+    T4: FromRequestParts<S> + Send,
+    T5: FromRequestParts<S> + Send,
+    T6: FromRequest<S, M> + Send,
+{
+    type Future = Pin<Box<dyn Future<Output = Response> + Send>>;
+    fn call(self, req: Request, state: S) -> Self::Future {
+        let (mut parts, body) = req.into_parts();
+        Box::pin(async move {
+            let T1 = match T1::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T2 = match T2::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T3 = match T3::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T4 = match T4::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T5 = match T5::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let req = Request::from_parts(parts, body);
+            let T6 = match T6::from_request(req, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            self(T1, T2, T3, T4, T5, T6).await.into_response()
+        })
+    }
+}
+#[diagnostic::do_not_recommend]
+#[allow(non_snake_case, unused_mut)]
+impl<F, Fut, S, Res, M, T1, T2, T3, T4, T5, T6, T7> Handler<(M, T1, T2, T3, T4, T5, T6, T7), S>
+    for F
+where
+    F: FnOnce(T1, T2, T3, T4, T5, T6, T7) -> Fut + Clone + Send + Sync + 'static,
+    Fut: Future<Output = Res> + Send,
+    S: Send + Sync + 'static,
+    Res: IntoResponse,
+    T1: FromRequestParts<S> + Send,
+    T2: FromRequestParts<S> + Send,
+    T3: FromRequestParts<S> + Send,
+    T4: FromRequestParts<S> + Send,
+    T5: FromRequestParts<S> + Send,
+    T6: FromRequestParts<S> + Send,
+    T7: FromRequest<S, M> + Send,
+{
+    type Future = Pin<Box<dyn Future<Output = Response> + Send>>;
+    fn call(self, req: Request, state: S) -> Self::Future {
+        let (mut parts, body) = req.into_parts();
+        Box::pin(async move {
+            let T1 = match T1::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T2 = match T2::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T3 = match T3::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T4 = match T4::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T5 = match T5::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T6 = match T6::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let req = Request::from_parts(parts, body);
+            let T7 = match T7::from_request(req, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            self(T1, T2, T3, T4, T5, T6, T7).await.into_response()
+        })
+    }
+}
+#[diagnostic::do_not_recommend]
+#[allow(non_snake_case, unused_mut)]
+impl<F, Fut, S, Res, M, T1, T2, T3, T4, T5, T6, T7, T8>
+    Handler<(M, T1, T2, T3, T4, T5, T6, T7, T8), S> for F
+where
+    F: FnOnce(T1, T2, T3, T4, T5, T6, T7, T8) -> Fut + Clone + Send + Sync + 'static,
+    Fut: Future<Output = Res> + Send,
+    S: Send + Sync + 'static,
+    Res: IntoResponse,
+    T1: FromRequestParts<S> + Send,
+    T2: FromRequestParts<S> + Send,
+    T3: FromRequestParts<S> + Send,
+    T4: FromRequestParts<S> + Send,
+    T5: FromRequestParts<S> + Send,
+    T6: FromRequestParts<S> + Send,
+    T7: FromRequestParts<S> + Send,
+    T8: FromRequest<S, M> + Send,
+{
+    type Future = Pin<Box<dyn Future<Output = Response> + Send>>;
+    fn call(self, req: Request, state: S) -> Self::Future {
+        let (mut parts, body) = req.into_parts();
+        Box::pin(async move {
+            let T1 = match T1::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T2 = match T2::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T3 = match T3::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T4 = match T4::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T5 = match T5::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T6 = match T6::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T7 = match T7::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let req = Request::from_parts(parts, body);
+            let T8 = match T8::from_request(req, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            self(T1, T2, T3, T4, T5, T6, T7, T8).await.into_response()
+        })
+    }
+}
+#[diagnostic::do_not_recommend]
+#[allow(non_snake_case, unused_mut)]
+impl<F, Fut, S, Res, M, T1, T2, T3, T4, T5, T6, T7, T8, T9>
+    Handler<(M, T1, T2, T3, T4, T5, T6, T7, T8, T9), S> for F
+where
+    F: FnOnce(T1, T2, T3, T4, T5, T6, T7, T8, T9) -> Fut + Clone + Send + Sync + 'static,
+    Fut: Future<Output = Res> + Send,
+    S: Send + Sync + 'static,
+    Res: IntoResponse,
+    T1: FromRequestParts<S> + Send,
+    T2: FromRequestParts<S> + Send,
+    T3: FromRequestParts<S> + Send,
+    T4: FromRequestParts<S> + Send,
+    T5: FromRequestParts<S> + Send,
+    T6: FromRequestParts<S> + Send,
+    T7: FromRequestParts<S> + Send,
+    T8: FromRequestParts<S> + Send,
+    T9: FromRequest<S, M> + Send,
+{
+    type Future = Pin<Box<dyn Future<Output = Response> + Send>>;
+    fn call(self, req: Request, state: S) -> Self::Future {
+        let (mut parts, body) = req.into_parts();
+        Box::pin(async move {
+            let T1 = match T1::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T2 = match T2::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T3 = match T3::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T4 = match T4::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T5 = match T5::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T6 = match T6::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T7 = match T7::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T8 = match T8::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let req = Request::from_parts(parts, body);
+            let T9 = match T9::from_request(req, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            self(T1, T2, T3, T4, T5, T6, T7, T8, T9)
+                .await
+                .into_response()
+        })
+    }
+}
+#[diagnostic::do_not_recommend]
+#[allow(non_snake_case, unused_mut)]
+impl<F, Fut, S, Res, M, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>
+    Handler<(M, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10), S> for F
+where
+    F: FnOnce(T1, T2, T3, T4, T5, T6, T7, T8, T9, T10) -> Fut + Clone + Send + Sync + 'static,
+    Fut: Future<Output = Res> + Send,
+    S: Send + Sync + 'static,
+    Res: IntoResponse,
+    T1: FromRequestParts<S> + Send,
+    T2: FromRequestParts<S> + Send,
+    T3: FromRequestParts<S> + Send,
+    T4: FromRequestParts<S> + Send,
+    T5: FromRequestParts<S> + Send,
+    T6: FromRequestParts<S> + Send,
+    T7: FromRequestParts<S> + Send,
+    T8: FromRequestParts<S> + Send,
+    T9: FromRequestParts<S> + Send,
+    T10: FromRequest<S, M> + Send,
+{
+    type Future = Pin<Box<dyn Future<Output = Response> + Send>>;
+    fn call(self, req: Request, state: S) -> Self::Future {
+        let (mut parts, body) = req.into_parts();
+        Box::pin(async move {
+            let T1 = match T1::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T2 = match T2::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T3 = match T3::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T4 = match T4::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T5 = match T5::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T6 = match T6::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T7 = match T7::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T8 = match T8::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T9 = match T9::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let req = Request::from_parts(parts, body);
+            let T10 = match T10::from_request(req, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            self(T1, T2, T3, T4, T5, T6, T7, T8, T9, T10)
+                .await
+                .into_response()
+        })
+    }
+}
+#[diagnostic::do_not_recommend]
+#[allow(non_snake_case, unused_mut)]
+impl<F, Fut, S, Res, M, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>
+    Handler<(M, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11), S> for F
+where
+    F: FnOnce(T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11) -> Fut + Clone + Send + Sync + 'static,
+    Fut: Future<Output = Res> + Send,
+    S: Send + Sync + 'static,
+    Res: IntoResponse,
+    T1: FromRequestParts<S> + Send,
+    T2: FromRequestParts<S> + Send,
+    T3: FromRequestParts<S> + Send,
+    T4: FromRequestParts<S> + Send,
+    T5: FromRequestParts<S> + Send,
+    T6: FromRequestParts<S> + Send,
+    T7: FromRequestParts<S> + Send,
+    T8: FromRequestParts<S> + Send,
+    T9: FromRequestParts<S> + Send,
+    T10: FromRequestParts<S> + Send,
+    T11: FromRequest<S, M> + Send,
+{
+    type Future = Pin<Box<dyn Future<Output = Response> + Send>>;
+    fn call(self, req: Request, state: S) -> Self::Future {
+        let (mut parts, body) = req.into_parts();
+        Box::pin(async move {
+            let T1 = match T1::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T2 = match T2::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T3 = match T3::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T4 = match T4::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T5 = match T5::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T6 = match T6::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T7 = match T7::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T8 = match T8::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T9 = match T9::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T10 = match T10::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let req = Request::from_parts(parts, body);
+            let T11 = match T11::from_request(req, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            self(T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11)
+                .await
+                .into_response()
+        })
+    }
+}
+#[diagnostic::do_not_recommend]
+#[allow(non_snake_case, unused_mut)]
+impl<F, Fut, S, Res, M, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>
+    Handler<(M, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12), S> for F
+where
+    F: FnOnce(T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12) -> Fut
+        + Clone
+        + Send
+        + Sync
+        + 'static,
+    Fut: Future<Output = Res> + Send,
+    S: Send + Sync + 'static,
+    Res: IntoResponse,
+    T1: FromRequestParts<S> + Send,
+    T2: FromRequestParts<S> + Send,
+    T3: FromRequestParts<S> + Send,
+    T4: FromRequestParts<S> + Send,
+    T5: FromRequestParts<S> + Send,
+    T6: FromRequestParts<S> + Send,
+    T7: FromRequestParts<S> + Send,
+    T8: FromRequestParts<S> + Send,
+    T9: FromRequestParts<S> + Send,
+    T10: FromRequestParts<S> + Send,
+    T11: FromRequestParts<S> + Send,
+    T12: FromRequest<S, M> + Send,
+{
+    type Future = Pin<Box<dyn Future<Output = Response> + Send>>;
+    fn call(self, req: Request, state: S) -> Self::Future {
+        let (mut parts, body) = req.into_parts();
+        Box::pin(async move {
+            let T1 = match T1::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T2 = match T2::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T3 = match T3::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T4 = match T4::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T5 = match T5::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T6 = match T6::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T7 = match T7::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T8 = match T8::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T9 = match T9::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T10 = match T10::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T11 = match T11::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let req = Request::from_parts(parts, body);
+            let T12 = match T12::from_request(req, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            self(T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12)
+                .await
+                .into_response()
+        })
+    }
+}
+#[diagnostic::do_not_recommend]
+#[allow(non_snake_case, unused_mut)]
+impl<F, Fut, S, Res, M, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>
+    Handler<(M, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13), S> for F
+where
+    F: FnOnce(T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13) -> Fut
+        + Clone
+        + Send
+        + Sync
+        + 'static,
+    Fut: Future<Output = Res> + Send,
+    S: Send + Sync + 'static,
+    Res: IntoResponse,
+    T1: FromRequestParts<S> + Send,
+    T2: FromRequestParts<S> + Send,
+    T3: FromRequestParts<S> + Send,
+    T4: FromRequestParts<S> + Send,
+    T5: FromRequestParts<S> + Send,
+    T6: FromRequestParts<S> + Send,
+    T7: FromRequestParts<S> + Send,
+    T8: FromRequestParts<S> + Send,
+    T9: FromRequestParts<S> + Send,
+    T10: FromRequestParts<S> + Send,
+    T11: FromRequestParts<S> + Send,
+    T12: FromRequestParts<S> + Send,
+    T13: FromRequest<S, M> + Send,
+{
+    type Future = Pin<Box<dyn Future<Output = Response> + Send>>;
+    fn call(self, req: Request, state: S) -> Self::Future {
+        let (mut parts, body) = req.into_parts();
+        Box::pin(async move {
+            let T1 = match T1::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T2 = match T2::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T3 = match T3::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T4 = match T4::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T5 = match T5::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T6 = match T6::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T7 = match T7::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T8 = match T8::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T9 = match T9::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T10 = match T10::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T11 = match T11::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T12 = match T12::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let req = Request::from_parts(parts, body);
+            let T13 = match T13::from_request(req, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            self(T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13)
+                .await
+                .into_response()
+        })
+    }
+}
+#[diagnostic::do_not_recommend]
+#[allow(non_snake_case, unused_mut)]
+impl<F, Fut, S, Res, M, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>
+    Handler<
+        (
+            M,
+            T1,
+            T2,
+            T3,
+            T4,
+            T5,
+            T6,
+            T7,
+            T8,
+            T9,
+            T10,
+            T11,
+            T12,
+            T13,
+            T14,
+        ),
+        S,
+    > for F
+where
+    F: FnOnce(T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14) -> Fut
+        + Clone
+        + Send
+        + Sync
+        + 'static,
+    Fut: Future<Output = Res> + Send,
+    S: Send + Sync + 'static,
+    Res: IntoResponse,
+    T1: FromRequestParts<S> + Send,
+    T2: FromRequestParts<S> + Send,
+    T3: FromRequestParts<S> + Send,
+    T4: FromRequestParts<S> + Send,
+    T5: FromRequestParts<S> + Send,
+    T6: FromRequestParts<S> + Send,
+    T7: FromRequestParts<S> + Send,
+    T8: FromRequestParts<S> + Send,
+    T9: FromRequestParts<S> + Send,
+    T10: FromRequestParts<S> + Send,
+    T11: FromRequestParts<S> + Send,
+    T12: FromRequestParts<S> + Send,
+    T13: FromRequestParts<S> + Send,
+    T14: FromRequest<S, M> + Send,
+{
+    type Future = Pin<Box<dyn Future<Output = Response> + Send>>;
+    fn call(self, req: Request, state: S) -> Self::Future {
+        let (mut parts, body) = req.into_parts();
+        Box::pin(async move {
+            let T1 = match T1::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T2 = match T2::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T3 = match T3::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T4 = match T4::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T5 = match T5::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T6 = match T6::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T7 = match T7::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T8 = match T8::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T9 = match T9::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T10 = match T10::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T11 = match T11::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T12 = match T12::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T13 = match T13::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let req = Request::from_parts(parts, body);
+            let T14 = match T14::from_request(req, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            self(T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14)
+                .await
+                .into_response()
+        })
+    }
+}
+#[diagnostic::do_not_recommend]
+#[allow(non_snake_case, unused_mut)]
+impl<F, Fut, S, Res, M, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>
+    Handler<
+        (
+            M,
+            T1,
+            T2,
+            T3,
+            T4,
+            T5,
+            T6,
+            T7,
+            T8,
+            T9,
+            T10,
+            T11,
+            T12,
+            T13,
+            T14,
+            T15,
+        ),
+        S,
+    > for F
+where
+    F: FnOnce(T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15) -> Fut
+        + Clone
+        + Send
+        + Sync
+        + 'static,
+    Fut: Future<Output = Res> + Send,
+    S: Send + Sync + 'static,
+    Res: IntoResponse,
+    T1: FromRequestParts<S> + Send,
+    T2: FromRequestParts<S> + Send,
+    T3: FromRequestParts<S> + Send,
+    T4: FromRequestParts<S> + Send,
+    T5: FromRequestParts<S> + Send,
+    T6: FromRequestParts<S> + Send,
+    T7: FromRequestParts<S> + Send,
+    T8: FromRequestParts<S> + Send,
+    T9: FromRequestParts<S> + Send,
+    T10: FromRequestParts<S> + Send,
+    T11: FromRequestParts<S> + Send,
+    T12: FromRequestParts<S> + Send,
+    T13: FromRequestParts<S> + Send,
+    T14: FromRequestParts<S> + Send,
+    T15: FromRequest<S, M> + Send,
+{
+    type Future = Pin<Box<dyn Future<Output = Response> + Send>>;
+    fn call(self, req: Request, state: S) -> Self::Future {
+        let (mut parts, body) = req.into_parts();
+        Box::pin(async move {
+            let T1 = match T1::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T2 = match T2::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T3 = match T3::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T4 = match T4::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T5 = match T5::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T6 = match T6::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T7 = match T7::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T8 = match T8::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T9 = match T9::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T10 = match T10::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T11 = match T11::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T12 = match T12::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T13 = match T13::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T14 = match T14::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let req = Request::from_parts(parts, body);
+            let T15 = match T15::from_request(req, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            self(
+                T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15,
+            )
+            .await
+            .into_response()
+        })
+    }
+}
+#[diagnostic::do_not_recommend]
+#[allow(non_snake_case, unused_mut)]
+impl<F, Fut, S, Res, M, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>
+    Handler<
+        (
+            M,
+            T1,
+            T2,
+            T3,
+            T4,
+            T5,
+            T6,
+            T7,
+            T8,
+            T9,
+            T10,
+            T11,
+            T12,
+            T13,
+            T14,
+            T15,
+            T16,
+        ),
+        S,
+    > for F
+where
+    F: FnOnce(T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16) -> Fut
+        + Clone
+        + Send
+        + Sync
+        + 'static,
+    Fut: Future<Output = Res> + Send,
+    S: Send + Sync + 'static,
+    Res: IntoResponse,
+    T1: FromRequestParts<S> + Send,
+    T2: FromRequestParts<S> + Send,
+    T3: FromRequestParts<S> + Send,
+    T4: FromRequestParts<S> + Send,
+    T5: FromRequestParts<S> + Send,
+    T6: FromRequestParts<S> + Send,
+    T7: FromRequestParts<S> + Send,
+    T8: FromRequestParts<S> + Send,
+    T9: FromRequestParts<S> + Send,
+    T10: FromRequestParts<S> + Send,
+    T11: FromRequestParts<S> + Send,
+    T12: FromRequestParts<S> + Send,
+    T13: FromRequestParts<S> + Send,
+    T14: FromRequestParts<S> + Send,
+    T15: FromRequestParts<S> + Send,
+    T16: FromRequest<S, M> + Send,
+{
+    type Future = Pin<Box<dyn Future<Output = Response> + Send>>;
+    fn call(self, req: Request, state: S) -> Self::Future {
+        let (mut parts, body) = req.into_parts();
+        Box::pin(async move {
+            let T1 = match T1::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T2 = match T2::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T3 = match T3::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T4 = match T4::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T5 = match T5::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T6 = match T6::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T7 = match T7::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T8 = match T8::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T9 = match T9::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T10 = match T10::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T11 = match T11::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T12 = match T12::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T13 = match T13::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T14 = match T14::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let T15 = match T15::from_request_parts(&mut parts, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            let req = Request::from_parts(parts, body);
+            let T16 = match T16::from_request(req, &state).await {
+                Ok(value) => value,
+                Err(rejection) => return rejection.into_response(),
+            };
+            self(
+                T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16,
+            )
+            .await
+            .into_response()
+        })
+    }
+}
 
 mod private {
     // Marker type for `impl<T: IntoResponse> Handler for T`

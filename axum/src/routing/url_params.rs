@@ -17,7 +17,7 @@ pub(super) fn insert_url_params(extensions: &mut Extensions, params: &Params<'_,
         return;
     }
 
-    let params = params
+    let param_pairs = params
         .iter()
         .filter(|(key, _)| !key.starts_with(super::NEST_TAIL_PARAM))
         .filter(|(key, _)| !key.starts_with(super::FALLBACK_PARAM))
@@ -30,7 +30,7 @@ pub(super) fn insert_url_params(extensions: &mut Extensions, params: &Params<'_,
         })
         .collect::<Result<Vec<_>, _>>();
 
-    match (current_params, params) {
+    match (current_params, param_pairs) {
         (Some(UrlParams::InvalidUtf8InPathParam { .. }), _) => {
             unreachable!("we check for this state earlier in this method")
         }

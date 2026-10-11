@@ -425,11 +425,14 @@ where
 
     #[doc = include_str!("../docs/routing/with_state.md")]
     pub fn with_state<S2>(self, state: S) -> Router<S2> {
-        map_inner!(self, this => RouterInner {
-            path_router: this.path_router.with_state(state.clone()),
-            default_fallback: this.default_fallback,
-            catch_all_fallback: this.catch_all_fallback.with_state(state),
-        })
+        let this = self.into_inner();
+        Router {
+            inner: Arc::new(RouterInner {
+                path_router: this.path_router.with_state(state.clone()),
+                default_fallback: this.default_fallback,
+                catch_all_fallback: this.catch_all_fallback.with_state(state),
+            }),
+        }
     }
 
     pub(crate) fn call_with_state(&self, req: Request, state: S) -> RouteFuture<Infallible> {
