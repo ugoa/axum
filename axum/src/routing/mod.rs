@@ -175,9 +175,20 @@ where
     #[doc = include_str!("../docs/routing/route.md")]
     #[track_caller]
     pub fn route(self, path: &str, method_router: MethodRouter<S>) -> Self {
-        tap_inner!(self, mut this => {
-            panic_on_err!(this.path_router.route(path, method_router));
-        })
+        // tap_inner!(self, mut this => {
+        //     panic_on_err!(this.path_router.route(path, method_router));
+        // });
+
+        let mut this = self.into_inner();
+        match this.path_router.route(path, method_router) {
+            Ok(x) => x,
+            Err(err) => {
+                panic!("{err}");
+            }
+        };
+        Self {
+            inner: Arc::new(this),
+        }
     }
 
     #[doc = include_str!("../docs/routing/route_service.md")]

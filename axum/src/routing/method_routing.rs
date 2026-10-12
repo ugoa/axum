@@ -438,13 +438,22 @@ where
 
 top_level_handler_fn!(connect, CONNECT);
 top_level_handler_fn!(delete, DELETE);
-top_level_handler_fn!(get, GET);
+// top_level_handler_fn!(get, GET);
 top_level_handler_fn!(head, HEAD);
 top_level_handler_fn!(options, OPTIONS);
 top_level_handler_fn!(patch, PATCH);
 top_level_handler_fn!(post, POST);
 top_level_handler_fn!(put, PUT);
 top_level_handler_fn!(trace, TRACE);
+
+pub fn get<H, T, S>(handler: H) -> MethodRouter<S, Infallible>
+where
+    H: Handler<T, S>,
+    T: 'static,
+    S: Clone + Send + Sync + 'static,
+{
+    on(MethodFilter::GET, handler)
+}
 
 /// Route requests with the given method to the handler.
 ///
@@ -645,9 +654,18 @@ where
     chained_handler_fn!(head, HEAD);
     chained_handler_fn!(options, OPTIONS);
     chained_handler_fn!(patch, PATCH);
-    chained_handler_fn!(post, POST);
+    // chained_handler_fn!(post, POST);
     chained_handler_fn!(put, PUT);
     chained_handler_fn!(trace, TRACE);
+
+    pub fn post<H, T>(self, handler: H) -> Self
+    where
+        H: Handler<T, S>,
+        T: 'static,
+        S: Send + Sync + 'static,
+    {
+        self.on(MethodFilter::POST, handler)
+    }
 
     /// Add a fallback [`Handler`] to the router.
     pub fn fallback<H, T>(mut self, handler: H) -> Self
@@ -1290,6 +1308,8 @@ where
             // .serve() 只接受一个合法的 Service
             Self::BoxedHandler(handler) => MethodEndpoint::Route(handler.into_route(state.clone())),
         }
+
+        // 这个方法只会返回 MethodEndpoint::Route(route), S2 此刻就变成了（）
     }
 }
 

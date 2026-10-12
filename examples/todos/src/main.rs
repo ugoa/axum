@@ -16,6 +16,7 @@
 use axum::{
     error_handling::HandleErrorLayer,
     extract::{Path, Query, State},
+    handler::Handler,
     http::StatusCode,
     response::IntoResponse,
     routing::{get, patch},
@@ -32,6 +33,14 @@ use tower_http::trace::TraceLayer;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 use uuid::Uuid;
 
+async fn hello_wrong(State(s): State<String>, State(i): State<usize>) -> String {
+    s
+}
+
+async fn hello(State(s): State<String>) -> String {
+    s
+}
+
 #[tokio::main]
 async fn main() {
     tracing_subscriber::registry()
@@ -45,9 +54,19 @@ async fn main() {
 
     let db = Db::default();
 
+    // 这个call会跳转到对应的实现
+    let h = hello.call(todo!(), todo!());
+
+    let hs = get(todos_index);
+
     // Compose the routes
     let app = Router::new()
-        .route("/todos", get(todos_index).post(todos_create))
+        .route("/hi", get(hello))
+        .with_state("ds".to_string())
+        // Router 里的 S 被传到 .route() 里的Handler的 S 绑定了,
+        // 只有通过with_state传入对应的S，才能变成 Router<()>, 才会被 .serve() 接受
+        // 如果不把当前的 S消解掉，会出现编译错误，可以把上面一行的 with_state注释掉来观察效果
+        .route("/todos", hs)
         .route("/todos/{id}", patch(todos_update).delete(todos_delete))
         // Add middleware to all routes
         .layer(
@@ -82,6 +101,7 @@ pub struct Pagination {
     pub limit: Option<usize>,
 }
 
+// State 实现了 FromRequestParts, 所以符合Handler的定义，而 Db 就是里面的 S
 async fn todos_index(pagination: Query<Pagination>, State(db): State<Db>) -> impl IntoResponse {
     let todos = db.read().unwrap();
 
